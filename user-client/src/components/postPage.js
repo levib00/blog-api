@@ -23,28 +23,7 @@ export const PostPage = () => { //receive props from app for when validation fai
   });
 
   const {data: post, error: postError} = useSWR(`http://localhost:8000/posts/${postId}`, fetcher)
-  const {data: comments, error: commentError} = useSWR(`http://localhost:8000/comments/${postId}`, fetcher)
-
-  /* useEffect(() => {
-    const getPosts = async() => {
-      fetch(`http://localhost:8000/posts/${postId}`, { //set localhost port
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        'Access-Control-Allow-Origin': '*',
-        mode: 'cors'
-      })
-      .then(async function(response) {
-        setPost(await response.json())
-      })
-      .catch(function(error) {
-        console.log("error---", error)
-      });
-    }
-    getPosts()
-  }, []) */
+  const {data: comments, mutate, error: commentError} = useSWR(`http://localhost:8000/comments/${postId}`, fetcher)
 
   return (
     <div className="post-page">
@@ -52,7 +31,7 @@ export const PostPage = () => { //receive props from app for when validation fai
         {post && <Post postId={postId} post={post} />}
       </div>
       <div className="comment-section">
-        <SubmitComment />
+        <SubmitComment postId={postId} refreshComments={mutate}/>
         {comments && comments.map(comment => <Comment key={comment._id} comment={comment} />)}
       </div>
     </div>
