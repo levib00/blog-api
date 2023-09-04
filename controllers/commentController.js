@@ -1,16 +1,21 @@
-import { body, validationResult } from 'express-validator';
-import asyncHandler from 'express-async-handler';
-import Comment from '../models/comment';
+const { body, validationResult } = require('express-validator');
+const asyncHandler = require('express-async-handler');
+const Comment = require('../models/comment');
 
-export const AllCommentsGet = asyncHandler(async (req, res, next) => {
-  res.send(Comment.find());
+exports.AllCommentsGet = asyncHandler(async (req, res, next) => {
+  res.send(await Comment.find());
 });
 
-export const CommentGet = asyncHandler(async (req, res, next) => {
-  res.send(Comment.findById(req.params.commentId));
+exports.PostPageCommentsGet = asyncHandler(async (req, res, next) => {
+  const comments = await Comment.find({ parentPost: req.params.postId }).exec();
+  res.send(comments);
 });
 
-export const CommentPost = [
+exports.CommentGet = asyncHandler(async (req, res, next) => {
+  res.send(await Comment.findById(req.params.commentId));
+});
+
+exports.CommentPost = [
 
   // Validate and sanitize fields.
   body('content', 'Title must not be empty.')
@@ -23,6 +28,8 @@ export const CommentPost = [
     .isLength({ max: 16 })
     .withMessage('message must be less than 16 characters long.')
     .escape(),
+  body('parentPost')
+    .escape(),
 
   // Process request after validation and sanitization.
 
@@ -31,28 +38,30 @@ export const CommentPost = [
     const errors = validationResult(req);
 
     const comment = new Comment({
+      parentPost: req.body.parentPost,
       content: req.body.content,
       displayName: req.body.displayName,
-      timeStamp: Date.now(),
+      timestamp: Date.now(),
     });
 
     if (!errors.isEmpty()) {
-      res.render('log-in', {
-        title: 'Log-in',
-        errors: errors.array(),
+      res.send(
         comment,
-      });
+      );
     } else {
       // Data from form is valid. Save message.
-      res.send(comment);
-      await comment.save();
-      res.redirect('/');
+      try {
+        await comment.save();
+        res.send('comment has been saved');
+      } catch (error) {
+        console.log(error);
+      }
     }
   }),
 ];
 
-export const editCommentFormGet = asyncHandler(async(req, res, next) => {
-  const comment = Comment.findById(req.params.commentId);
+exports.editCommentFormGet = asyncHandler(async(req, res, next) => {
+  const comment = await Comment.findById(req.params.commentId);
   res.format({
     html() {
       res.render('comment_form', comment);
@@ -63,7 +72,7 @@ export const editCommentFormGet = asyncHandler(async(req, res, next) => {
   });
 });
 
-export const editCommentPut = [
+/* exports.editCommentPut = [
 
   // Validate and sanitize fields.
   body('content', 'Title must not be empty.')
@@ -102,11 +111,11 @@ export const editCommentPut = [
       res.redirect('/');
     }
   }),
-];
+];*/
 
-export const CommentDelete = asyncHandler(async (req, res, next) => {
+exports.CommentDelete = asyncHandler(async (req, res, next) => {
   if (Comment.findById(req.params.commentId)) {
-    Comment.findByIdAndRemove(req.params.commentId);
+    await Comment.findByIdAndRemove(req.params.commentId);
     return res.send('Comment has been deleted.');
   }
   return res.send('Comment could not be found.'); // TODO: make into real error response.
