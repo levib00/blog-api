@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from "react";
-import {Post} from './post';
-
+import React, { useEffect } from 'react';
+import useSWR from 'swr';
+import { useNavigate } from "react-router-dom";
+import { Post } from './post';
 
 export const Home = () => {
+  const navigate = useNavigate()
   
-  const [posts, setPosts] = useState();
+    const fetcher = (url) => fetch(url, { //set localhost port
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      'Access-Control-Allow-Origin': '*',
+      mode: 'cors'
+    })
+    .then(res => res.json())
+    .catch(function(error) {
+      console.log("error---", error)
+    });
   
+    const {data: posts, error} = useSWR(`http://localhost:8000/posts`, fetcher)
 
-  useEffect(() => {
-    const getPosts = async() => {
-      fetch('http://localhost:8000/posts', { //set localhost port
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        'Access-Control-Allow-Origin': '*',
-        mode: 'cors'
-      })
-      .then(async function(response) {
-        setPosts(await response.json())
-      })
-      .catch(function(error) {
-        console.log("error---", error)
-      });
-    }
-    getPosts()
-  }, [])
+    useEffect(()=> {
+      if(error) {
+        navigate('/error')
+      }
+    }, [error, navigate])
 
   return (
     <div className="create-post">
