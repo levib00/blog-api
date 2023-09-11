@@ -4,12 +4,25 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 
 exports.AllPostsGet = asyncHandler(async (req, res, next) => {
-  const posts = await Post.find();
+  let posts;
+
+  if (req.user) { // TODO: replace req.user with jwt for authorization uses.
+    posts = await Post.find();
+  } else {
+    posts = await Post.find({ isPublic: true });
+  }
   res.send(posts);
 });
 
 exports.PostGet = asyncHandler(async (req, res, next) => {
-  res.send(await Post.findById(req.params.postId));
+  let post;
+  const isAuthenticated = !!req.user;
+  if (isAuthenticated) {
+    post = await Post.findById(req.params.postId);
+  } else {
+    post = await Post.find({ isPublic: true, _id: req.params.postId });
+  }
+  res.send({ post, isAuthenticated });
 });
 
 exports.PostPost = [
@@ -22,50 +35,50 @@ exports.PostPost = [
   body('content', 'content must not be empty.')
     .trim()
     .escape(),
-  body('isPublic'), // ! Will have to figure out how value works.
+  body('isPublic'),
 
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    const errors = validationResult(req);
+    if (res.locals.currentUser) {
+      const errors = validationResult(req);
 
-    const post = new Post({
-      content: req.body.content,
-      title: req.body.title,
-      timestamp: Date.now(),
-      isPublic: req.body.isPublic,
-    });
-
-    if (!errors.isEmpty()) {
-      console.log(errors);
-      res.send({
-        errors: errors.array(),
-        post,
+      const post = new Post({
+        content: req.body.content,
+        title: req.body.title,
+        timestamp: Date.now(),
+        isPublic: req.body.isPublic,
       });
-    } else {
-      // Data from form is valid. Save message.
-      try {
-        console.log('fsdaf');
-        await post.save();
-        res.send('post has been saved');
-      } catch (error) {
-        console.log(error);
+
+      if (!errors.isEmpty()) {
+        console.log(errors);
+        res.send({
+          errors: errors.array(),
+          post,
+        });
+      } else {
+        // Data from form is valid. Save message.
+        try {
+          console.log('fsdaf');
+          await post.save();
+          res.send('post has been saved');
+        } catch (error) {
+          console.log(error);
+        }
       }
+    } else {
+      console.log(res.locals.currentUser);
+      res.status(401).send('You must be logged in as an admin to post.');
     }
   }),
 ];
 
 exports.editPostFormGet = asyncHandler(async (req, res, next) => {
-  const post = await Post.findById(req.params.postId);
-  res.format({
-    html() {
-      res.render('post_form', post);
-    },
-    json() {
-      res.send(post);
-    },
-  });
+  if (req.user) {
+    const post = await Post.findById(req.params.postId);
+    res.send(post);
+  }
 });
 
 exports.editPostPut = [
@@ -81,41 +94,44 @@ exports.editPostPut = [
     .isLength({ max: 16 })
     .withMessage('message must be less than 16 characters long.')
     .escape(),
-  body('isPublic').escape(), // ! Will have to figure out how value works.
+  body('isPublic').escape(),
 
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    const errors = validationResult(req);
+    if (req.user) {
+      const errors = validationResult(req);
 
-    const post = new Post({
-      content: req.body.content,
-      displayName: req.body.displayName,
-      _id: req.params.commentId,
-    });
-
-    if (!errors.isEmpty()) {
-      res.send({
-        errors: errors.array(),
-        post,
+      const post = new Post({
+        content: req.body.content,
+        displayName: req.body.displayName,
+        _id: req.params.commentId,
       });
-    } else {
-      // Data from form is valid. Save message.
-      res.send(post);
-      await post.save();
-      res.redirect('/');
+
+      if (!errors.isEmpty()) {
+        res.send({
+          errors: errors.array(),
+          post,
+        });
+      } else {
+        // Data from form is valid. Save message.
+        res.send(post);
+        await post.save();
+        res.redirect('/');
+      }
     }
   }),
 ];
 
 exports.PostDelete = asyncHandler(async (req, res, next) => {
-  const post = await Post.findById(req.params.postId);
-  if (post) {
-    await Comment.deleteMany({ parentPost: req.params.postId });
-    await Post.findByIdAndRemove(req.params.postId);
-    return res.send('Comment has been deleted.');
-  }
-  return res.send('Comment could not be found.'); // TODO: make into real error response.
+  if (req.user) {
+    const post = await Post.findById(req.params.postId);
+    if (post) {
+      await Comment.deleteMany({ parentPost: req.params.postId });
+      await Post.findByIdAndRemove(req.params.postId);
+      return res.send('Comment has been deleted.');
+    }
+    return res.send('Comment could not be found.');
+  }// TODO: make into real error response.
 });
-// TODO: figure out how to do error handling in express.
