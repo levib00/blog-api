@@ -4,9 +4,15 @@ import { useNavigate } from "react-router-dom";
 export const Nav = ({comment, setError}) => {
   const navigate = useNavigate();
 
-  const isAuthenticated = () => {
+  const checkIsAuthenticated = () => { // TODO: move to App and pass through props.
     const cookie = document.cookie
     return !!cookie
+  }
+
+  const isAuthenticated = checkIsAuthenticated()
+
+  const deleteJWT = () => {
+    localStorage.removeItem('jwt');
   }
 
   const logout = async(e) => {
@@ -23,6 +29,7 @@ export const Nav = ({comment, setError}) => {
       })
       console.log(response)
       if (response.status === 200) {
+        deleteJWT()
         navigate('/')
       } else {
         setError(response)
@@ -36,8 +43,8 @@ export const Nav = ({comment, setError}) => {
   return (
     <div className="comment">
       <h1><a href="/">Home</a></h1>
-      <a href="/post/new"><button>Create a new post</button></a>
-      { isAuthenticated() ? <button onClick={logout}>Log out</button>: <a href="/log-in"><button>Log in</button></a>}
+      {isAuthenticated && <a href="/post/new"><button>Create a new post</button></a>}
+      { isAuthenticated ? <button onClick={logout}>Log out</button>: <a href="/log-in"><button>Log in</button></a>}
     </div>
   )
 }
