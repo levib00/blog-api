@@ -37,6 +37,8 @@ export const LogIn = () => { //receive props from app for when validation fails
         mode: 'cors'
       })
       if (response.status === 200) {
+        const tokenObject = await response.json()
+        localStorage.setItem('jwt', await tokenObject.token)
         navigate('/')
       } else if (response.status === 401) {
         setErrors(['Wrong username or password.'])
