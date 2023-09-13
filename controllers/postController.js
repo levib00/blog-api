@@ -5,8 +5,7 @@ const Comment = require('../models/comment');
 
 exports.AllPostsGet = asyncHandler(async (req, res, next) => {
   let posts;
-
-  if (req.user) { // TODO: replace req.user with jwt for authorization uses.
+  if (req.token) {
     posts = await Post.find();
   } else {
     posts = await Post.find({ isPublic: true });
@@ -16,13 +15,12 @@ exports.AllPostsGet = asyncHandler(async (req, res, next) => {
 
 exports.PostGet = asyncHandler(async (req, res, next) => {
   let post;
-  const isAuthenticated = !!req.user;
-  if (isAuthenticated) {
+  if (req.token) {
     post = await Post.findById(req.params.postId);
   } else {
     post = await Post.find({ isPublic: true, _id: req.params.postId });
   }
-  res.send({ post, isAuthenticated });
+  res.send(post);
 });
 
 exports.PostPost = [
@@ -41,7 +39,7 @@ exports.PostPost = [
 
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    if (res.locals.currentUser) {
+    if (typeof req.token !== 'undefined') {
       const errors = validationResult(req);
 
       const post = new Post({
@@ -52,7 +50,6 @@ exports.PostPost = [
       });
 
       if (!errors.isEmpty()) {
-        console.log(errors);
         res.send({
           errors: errors.array(),
           post,
@@ -60,22 +57,20 @@ exports.PostPost = [
       } else {
         // Data from form is valid. Save message.
         try {
-          console.log('fsdaf');
           await post.save();
           res.send('post has been saved');
         } catch (error) {
-          console.log(error);
+          console.log(error); // TODO: figure out.
         }
       }
     } else {
-      console.log(res.locals.currentUser);
       res.status(401).send('You must be logged in as an admin to post.');
     }
   }),
 ];
 
 exports.editPostFormGet = asyncHandler(async (req, res, next) => {
-  if (req.user) {
+  if (req.token) {
     const post = await Post.findById(req.params.postId);
     res.send(post);
   }
@@ -100,12 +95,13 @@ exports.editPostPut = [
 
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    if (req.user) {
+    if (req.token) {
       const errors = validationResult(req);
 
       const post = new Post({
         content: req.body.content,
         displayName: req.body.displayName,
+        isPublic: req.body.isPublic,
         _id: req.params.commentId,
       });
 
@@ -113,19 +109,20 @@ exports.editPostPut = [
         res.send({
           errors: errors.array(),
           post,
+          // TODO: fill page with post info on error.
+          // TODO: may not be needed since using react. still good to have in an api i think
         });
       } else {
         // Data from form is valid. Save message.
-        res.send(post);
         await post.save();
-        res.redirect('/');
+        res.send(post);
       }
     }
   }),
 ];
 
 exports.PostDelete = asyncHandler(async (req, res, next) => {
-  if (req.user) {
+  if (req.token) {
     const post = await Post.findById(req.params.postId);
     if (post) {
       await Comment.deleteMany({ parentPost: req.params.postId });
