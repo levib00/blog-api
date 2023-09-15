@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const LogIn = () => { //receive props from app for when validation fails
+export const LogIn = ({ isAuthenticated, setError }) => { //receive props from app for when validation fails
   // State to hold the comment input
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -10,10 +10,6 @@ export const LogIn = () => { //receive props from app for when validation fails
   // State to control the display of the sign-in modal
 
   useEffect(() => {
-    const isAuthenticated = () => { // TODO: define in App and pass through as props.
-      const cookie = document.cookie
-      return !!cookie
-    }
     if (isAuthenticated()) {
       navigate('/')
     }
@@ -46,7 +42,8 @@ export const LogIn = () => { //receive props from app for when validation fails
         setErrors(['Something went wrong. Please try again.'])
       }
     } catch (error) {
-      console.log("error---", error)
+      setError(error)
+      navigate('/error')
     }
   }
 
