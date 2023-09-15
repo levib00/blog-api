@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const Nav = ({comment, setError}) => {
+export const Nav = ({setError, isAuthenticated}) => {
   const navigate = useNavigate();
 
-  const checkIsAuthenticated = () => { // TODO: move to App and pass through props.
-    const cookie = document.cookie
-    return !!cookie
-  }
-
-  const isAuthenticated = checkIsAuthenticated()
+  const hasAuth = isAuthenticated()
 
   const deleteJWT = () => {
     localStorage.removeItem('jwt');
@@ -27,7 +22,6 @@ export const Nav = ({comment, setError}) => {
         'Access-Control-Allow-Origin': 'http://localhost:3000',
         mode: 'cors'
       })
-      console.log(response)
       if (response.status === 200) {
         deleteJWT()
         navigate('/')
@@ -36,15 +30,16 @@ export const Nav = ({comment, setError}) => {
         navigate('/error')
       }
     } catch (error) {
-      console.log("error---", error)
+      setError(error)
+      navigate('/error')
     }
   }
 
   return (
     <div className="comment">
       <h1><a href="/">Home</a></h1>
-      {isAuthenticated && <a href="/post/new"><button>Create a new post</button></a>}
-      { isAuthenticated ? <button onClick={logout}>Log out</button>: <a href="/log-in"><button>Log in</button></a>}
+      {hasAuth && <a href="/post/new"><button>Create a new post</button></a>}
+      { hasAuth ? <button onClick={logout}>Log out</button>: <a href="/log-in"><button>Log in</button></a>}
     </div>
   )
 }
