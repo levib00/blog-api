@@ -14,11 +14,11 @@ exports.AllPostsGet = asyncHandler(async (req, res, next) => {
 });
 
 exports.PostGet = asyncHandler(async (req, res, next) => {
-  let post;
+  let post = await Post.find({ isPublic: true, _id: req.params.postId });
   if (req.token) {
     post = await Post.findById(req.params.postId);
-  } else {
-    post = await Post.find({ isPublic: true, _id: req.params.postId });
+  } else if (!post) {
+    res.status(404).send('This post does not exist or you do not have access to it');
   }
   res.send(post);
 });
@@ -28,7 +28,7 @@ exports.PostPost = [
   body('title', 'Post content must not be empty.')
     .trim()
     .isLength({ max: 48 })
-    .withMessage('Title must be less than 16 characters long.')
+    .withMessage('Title must be less than 48 characters long.')
     .escape(),
   body('content', 'content must not be empty.')
     .trim()
@@ -50,7 +50,7 @@ exports.PostPost = [
       });
 
       if (!errors.isEmpty()) {
-        res.send({
+        res.status(422).send({
           errors: errors.array(),
           post,
         });
@@ -60,7 +60,7 @@ exports.PostPost = [
           await post.save();
           res.send('post has been saved');
         } catch (error) {
-          console.log(error); // TODO: figure out.
+          res.send(error);
         }
       }
     } else {
@@ -69,54 +69,51 @@ exports.PostPost = [
   }),
 ];
 
-exports.editPostFormGet = asyncHandler(async (req, res, next) => {
-  if (req.token) {
-    const post = await Post.findById(req.params.postId);
-    res.send(post);
-  }
-});
-
 exports.editPostPut = [
 
   // Validate and sanitize fields.
-  body('content', 'Title must not be empty.')
+  body('title', 'Post content must not be empty.')
     .trim()
-    .isLength({ max: 300 })
-    .withMessage('Title must be less than 300 characters long.')
+    .isLength({ max: 48 })
+    .withMessage('Title must be less than 48 characters long.')
     .escape(),
-  body('displayName', 'Message must not be empty.')
+  body('content', 'content must not be empty.')
     .trim()
-    .isLength({ max: 16 })
-    .withMessage('message must be less than 16 characters long.')
     .escape(),
-  body('isPublic').escape(),
+  body('isPublic'),
 
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
+    console.log(req.body)
     // Extract the validation errors from a request.
     if (req.token) {
       const errors = validationResult(req);
 
       const post = new Post({
         content: req.body.content,
-        displayName: req.body.displayName,
+        title: req.body.title,
         isPublic: req.body.isPublic,
-        _id: req.params.commentId,
+        timestamp: req.body.timestamp,
+        _id: req.params.postId,
       });
 
       if (!errors.isEmpty()) {
-        res.send({
+        res.status(422).send({
           errors: errors.array(),
           post,
-          // TODO: fill page with post info on error.
-          // TODO: may not be needed since using react. still good to have in an api i think
         });
       } else {
         // Data from form is valid. Save message.
-        await post.save();
-        res.send(post);
+        try {
+          await Post.findByIdAndUpdate(req.params.postId, post, {});
+          res.send({ post, msg: 'post has been updated.' });
+        } catch (error) {
+          res.send(error);
+        }
       }
+    } else {
+      res.status(401).send('You must be logged in as an admin to edit a post.');
     }
   }),
 ];
@@ -127,8 +124,11 @@ exports.PostDelete = asyncHandler(async (req, res, next) => {
     if (post) {
       await Comment.deleteMany({ parentPost: req.params.postId });
       await Post.findByIdAndRemove(req.params.postId);
-      return res.send('Comment has been deleted.');
+      res.send('Comment has been deleted.');
+    } else {
+      res.status(404).send('This post was not found');
     }
-    return res.send('Comment could not be found.');
-  }// TODO: make into real error response.
+  } else {
+    res.status(401).send('You must be logged in as an admin to delete a post.');
+  }
 });
