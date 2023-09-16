@@ -1,27 +1,31 @@
 const express = require('express');
 const passport = require('passport');
 require('cookie-parser');
-const makeCookie = require('../middleware/makeCookie');
-const deleteCookie = require('../middleware/deleteCookie');
-
-const userController = require('../controllers/userController');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const router = express.Router();
 
-router.get('/', userController.IsAuthenticated);
-
-router.post('/log-in', makeCookie, passport.authenticate('local', {
+router.post('/log-in', passport.authenticate('local', {
   failureMessage: true,
 }), (req, res) => {
-  res.send('Cookie created');
+  jwt.sign({ user: req.user }, process.env.JWT_SECRET, (err, token) => {
+    res.json({ token });
+  });
 });
 
-router.post('/log-out', deleteCookie, (req, res, next) => {
+router.post('/log-out', (req, res, next) => {
   req.logout((err) => {
     if (err) {
       return next(err);
     }
-    return res.redirect('/');
+    return req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.clearCookie('connect.sid');
+      return res.send('Logged out');
+    });
   });
 });
 
