@@ -23,7 +23,7 @@ export const Home = ({ isAuthenticated, setError }) => {
   })
   .then(res => res.json());
 
-  const {data: posts, error} = useSWR(`http://localhost:8000/posts`, fetcher)
+  const {data: posts, mutate, error} = useSWR(`http://localhost:8000/posts`, fetcher)
 
   useEffect(()=> {
     if(error) {
@@ -35,7 +35,7 @@ export const Home = ({ isAuthenticated, setError }) => {
   return (
     <div className="create-post">
       <span>see new posts</span>
-      {posts && posts.map(post => <Post post={post} key={post._id} hasAuth={hasAuth}/>)}
+      {posts && posts.map(post => <Post refreshPosts={mutate} post={post} key={post._id} setError={setError} hasAuth={hasAuth}/>)}
     </div>
   )
 }
