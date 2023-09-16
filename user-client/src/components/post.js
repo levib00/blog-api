@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export const Post = ({post, postId}) => { //receive props from app for when validation fails
+export const Post = ({post, postId}) => {
   const postDate = new Date(post.timestamp)
 
   return (
