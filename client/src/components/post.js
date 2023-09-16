@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 
-export const Post = ({post, hasAuth, setError}) => {
+export const Post = ({post, hasAuth, setError, refreshPosts}) => {
   const navigate = useNavigate();
   const postDate = new Date(post.timestamp)
 
@@ -18,8 +18,7 @@ export const Post = ({post, hasAuth, setError}) => {
       mode: 'cors'
     })
     .then(function(response) {
-      window.location.reload(false)
-      navigate('/')
+      refreshPosts()
     })
     // It parses the output
     .catch(function(error) {
@@ -28,7 +27,34 @@ export const Post = ({post, hasAuth, setError}) => {
     });
   }
 
-  return ( // TODO: Add put functions to private and public buttons
+  const editPost = async(e) => {
+    e.preventDefault()
+    try {
+      const response = await fetch(`http://localhost:8000/posts/${post._id}/edit`, {  
+        method: 'put',
+        body : JSON.stringify({
+          title: post.title,
+          content: post.content,
+          timestamp: post.timestamp,
+          isPublic: !post.isPublic
+        }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+        },
+        'Access-Control-Allow-Origin': '*',
+        mode: 'cors'
+      })
+      if (response.status === 200) {
+        refreshPosts()
+      }
+    } catch(error) {
+      setError(error)
+    }
+  }
+
+  return (
     <div className="create-post">
       <div key={post._id}>
         <div>{`${postDate.getDate()}/${postDate.getMonth()}/${postDate.getFullYear()}`}</div>
@@ -36,7 +62,7 @@ export const Post = ({post, hasAuth, setError}) => {
         <div className="action-buttons">
           {hasAuth && <button onClick={deletePost}>Delete</button>}
           {hasAuth && <a href={`/${post._id}/edit`}><button>Edit</button></a>}
-          {hasAuth && (post.isPublic ? <button>Make private</button> : <button>Make public</button>)} 
+          {hasAuth && (post.isPublic ? <button onClick={(e) => editPost(e)}>Make private</button> : <button onClick={(e) => editPost(e)}>Make public</button>)} 
         </div>
       </div>
     </div>
