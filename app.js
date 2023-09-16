@@ -30,7 +30,6 @@ app.use(passport.initialize());
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
-      console.log(username, password);
       const user = await User.findOne({ username });
       if (!user) {
         return done(null, false, { message: 'Incorrect username' });
@@ -72,12 +71,20 @@ app.use(session({
   saveUninitialized: true,
   cookie: {
     httpOnly: false,
-    secure: true,
+    sameSite: 'strict',
   },
 }));
 
+const whitelist = ['http://localhost:3000', 'http://localhost:3001'];
+
 const corsOptions = {
-  origin: 'http://localhost:3000', // Your Client, do not write '*'
+  origin(origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 };
 
