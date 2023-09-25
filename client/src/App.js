@@ -12,24 +12,6 @@ import './styles/styles.css'
 function App() {
   const [error, setError] = useState()
   const [hasAuth, setHasAuth] = useState(localStorage.getItem('jwt'))
-/*
-  const fetcher = (url) => fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: (() => {
-        const token = localStorage.getItem('jwt');
-        if (token) {
-          return 'Bearer ' + localStorage.getItem('jwt')
-        }
-        return null
-      })()
-    },
-    'Access-Control-Allow-Origin': '*',
-    mode: 'cors'
-  })
-  .then(res => res.json());*/ // TODO: would this work???
 
   const parseDom = (str) => {
     const doc = new DOMParser().parseFromString(str, "text/html");
