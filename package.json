@@ -8,6 +8,8 @@
     "serverstart": "DEBUG=blog-api:* npm run devstart"
   },
   "dependencies": {
+    "@mdi/js": "^7.2.96",
+    "@mdi/react": "^1.6.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
     "cookie-session": "^2.0.0",
