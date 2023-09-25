@@ -20,13 +20,17 @@ exports.AllPostsGet = asyncHandler(async (req, res) => {
 exports.PostGet = asyncHandler(async (req, res) => {
   let post = await Post.find({ isPublic: true, _id: req.params.postId });
   jwt.verify(req.token, process.env.JWT_SECRET, async (err) => {
-    if (typeof post !== 'undefined') {
+    if (post.length > 0) {
       res.send(post);
     } else if (err) {
       res.status(404).send('This post does not exist or you do not have access to it');
     } else {
       post = await Post.findById(req.params.postId);
-      res.send(post);
+      if (post.length < 1) {
+        res.status(404).send('This post does not exist or you do not have access to it');
+      } else {
+        res.send(post);
+      }
     }
   });
 });
