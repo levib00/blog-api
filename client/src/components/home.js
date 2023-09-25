@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { useNavigate } from "react-router-dom";
 import { Post } from './post';
 
-export const Home = ({ isAuthenticated, setError }) => {
+export const Home = ({ hasAuth, setError, parseDom }) => {
   const navigate = useNavigate()
-  const [hasAuth, setHasAuth] = useState()
-
-  useEffect(()=> {
-    setHasAuth(isAuthenticated())
-  }, [isAuthenticated])
   
   const fetcher = (url) => fetch(url, {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+      Authorization: (() => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+          return 'Bearer ' + localStorage.getItem('jwt')
+        }
+        return null
+      })()
     },
     'Access-Control-Allow-Origin': '*',
     mode: 'cors'
@@ -32,10 +33,14 @@ export const Home = ({ isAuthenticated, setError }) => {
     }
   }, [error, navigate])
 
+  useEffect(()=> {
+    mutate()
+  }, [hasAuth])
+
   return (
-    <div className="create-post">
-      <span>see new posts</span>
-      {posts && posts.map(post => <Post refreshPosts={mutate} post={post} key={post._id} setError={setError} hasAuth={hasAuth}/>)}
+    <div className="content">
+      <h2 className='posts-title'>Your Posts</h2>
+      <div className="post-list">{posts && posts.map(post => <Post parseDom={parseDom} refreshPosts={mutate} post={post} key={post._id} setError={setError} hasAuth={hasAuth}/>)}</div>
     </div>
   )
 }
