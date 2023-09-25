@@ -4,6 +4,8 @@ module.exports = function (req, res, next) {
     const bearer = bearerHeader.split(' ');
     const bearerToken = bearer[1];
     req.token = bearerToken;
+  } else {
+    req.token = null;
   }
   next();
 };
