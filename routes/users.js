@@ -10,6 +10,9 @@ router.post('/log-in', passport.authenticate('local', {
   failureMessage: true,
 }), (req, res) => {
   jwt.sign({ user: req.user }, process.env.JWT_SECRET, (err, token) => {
+    if (err) {
+      res.send(err);
+    }
     res.json({ token });
   });
 });
