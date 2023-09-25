@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {Post} from './post';
 import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr';
 
 
-export const Home = ({setError}) => {  
+export const Home = ({setError, parseDom}) => {
   const navigate = useNavigate()
 
   const fetcher = (url) => fetch(url, {
@@ -27,9 +27,8 @@ export const Home = ({setError}) => {
   }, [error, navigate])
 
   return (
-    <div className="create-post">
-      <span>see new posts</span>
-      {posts && posts.map(post => <Post post={post} key={post._id} />)}
+    <div className="content">
+      <div className="post-list">{posts && posts.map(post => <Post post={post} parseDom={parseDom} key={post._id} />)}</div>
     </div>
   )
 }
