@@ -6,9 +6,8 @@ export const LogIn = ({ hasAuth, setError, setHasAuth }) => {
   const [passwordInput, setPasswordInput] = useState('');
   const [errors, setErrors] = useState([])
   const navigate = useNavigate();
-  // State to control the display of the sign-in modal
 
-  useEffect(() => {
+  useEffect(() => { // Redirect if user is already logged in.
     if (hasAuth) {
       navigate('/')
     }
@@ -35,15 +34,15 @@ export const LogIn = ({ hasAuth, setError, setHasAuth }) => {
         const tokenObject = await response.json()
         localStorage.setItem('jwt', await tokenObject.token)
         setHasAuth(localStorage.getItem('jwt'))
-        navigate('/')
-      } else if (response.status === 401) {
+        navigate('/') // Redirect if user successfully logged in.
+      } else if (response.status === 401) { // Sets and renders validation errors.
         setErrors(['Wrong username or password.'])
       } else {
         setErrors(['Something went wrong. Please try again.'])
       }
     } catch (error) {
       setError(error)
-      navigate('/error')
+      navigate('/error') // Redirect to error page if there is a non-validation error.
     }
   }
 

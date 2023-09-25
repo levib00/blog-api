@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from '@mdi/react';
 import { mdiSquareEditOutline } from '@mdi/js';
@@ -69,7 +69,8 @@ export const Post = ({post, hasAuth, setError, refreshPosts, parseDom}) => {
         <h3 className="post-title">{parseDom(post.title)}</h3>
         <div>{`${postDate.getDate()}/${postDate.getMonth()}/${postDate.getFullYear()}`}</div>
       </div>
-      <div className="action-buttons">
+      <div className="action-buttons"> {/* show buttons if user is logged in. */}
+      {/* determine whether publish or unpublish button shows. */}
       {hasAuth && (post.isPublic ? <button className="publish-button" onClick={(e) => editPost(e)}>Unpublish</button> : <button className="publish-button" onClick={(e) => editPost(e)}>Publish</button>)} 
         <div className="top-post-buttons">
           {hasAuth && <a href={`/${post._id}/edit`}><button><Icon path={mdiSquareEditOutline} size={1} /></button></a>}

@@ -12,9 +12,9 @@ export const Home = ({ hasAuth, setError, parseDom }) => {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       Authorization: (() => {
-        const token = localStorage.getItem('jwt');
+        const token = localStorage.getItem('jwt'); // Gets token from local storage and formats it for verifyToken.
         if (token) {
-          return 'Bearer ' + localStorage.getItem('jwt')
+          return 'Bearer ' + token
         }
         return null
       })()
@@ -24,16 +24,17 @@ export const Home = ({ hasAuth, setError, parseDom }) => {
   })
   .then(res => res.json());
 
+  //SWR is used to fetch on page load without useEffect.
   const {data: posts, mutate, error} = useSWR(`http://localhost:8000/posts`, fetcher)
 
   useEffect(()=> {
     if(error) {
-      setError(error)
+      setError(error) // Set error then redirect to error page.
       navigate('/error')
     }
   }, [error, navigate])
 
-  useEffect(()=> {
+  useEffect(()=> { // Refresh posts if auth state changes.
     mutate()
   }, [hasAuth])
 

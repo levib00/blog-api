@@ -37,7 +37,7 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
         Authorization: (() => {
           const token = localStorage.getItem('jwt');
           if (token) {
-            return 'Bearer ' + localStorage.getItem('jwt')
+            return 'Bearer ' + token
           }
           return null
         })()
@@ -48,12 +48,12 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
     setValues(await response.json())
   } catch(error) {
     setError(error)
-    navigate('/error')
+    navigate('/error') // redirect to error page on server error.
   }
   }
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit) { // Gets post if this is an edit instead of a new post.
       getPost()
     }
   }, [])
@@ -75,8 +75,7 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {
-              return 'Bearer ' + localStorage.getItem('jwt')
-              
+              return 'Bearer ' + token
             }
             return null
           })()
@@ -85,14 +84,14 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
         mode: 'cors'
       })
       if (response.status === 200) {
-        navigate('/')
+        navigate('/') // redirect home on successful post.
       } else {
         const jsonResponse = await response.json()
-          setErrors(jsonResponse.errors)
+          setErrors(jsonResponse.errors) // set validation errors.
       }
     } catch(error) {
       setError(error)
-      navigate('/error')
+      navigate('/error') // redirect to error page on server error.
     }
   }
 
@@ -112,7 +111,7 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {
-              return 'Bearer ' + localStorage.getItem('jwt')
+              return 'Bearer ' + token
             }
             return null
           })()
@@ -121,24 +120,26 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
         mode: 'cors'
       })
       if (response.status === 200) {
-        navigate('/')
+        navigate('/') // redirect to home on successful post request.
       } else {
         const jsonResponse = await response.json()
-        setErrors(jsonResponse.errors)
+        setErrors(jsonResponse.errors) // set validation errors.
       }
     } catch (error) {
       setError(error)
-      navigate('/error')
+      navigate('/error') // redirect to error page on server error
     }
   }
 
   return (
+    // changes class depending on whether this is part of post-page.
     <div className={!isEdit ? "content" : "submit-form"}>
       <div class="submit-form">
         <form>
           <div className="title">
             <div className="title-info">
               <label htmlFor='post-title'>Title:</label>
+              {/* shows character count so user can see max character count */}
               <span className="char-counter">{titleInput.length} / 48</span>
             </div>
             <div><input id='post-title' type='text' className='title-input' onChange={(e) => setTitleInput(e.target.value)} value={titleInput}></input></div>
@@ -150,6 +151,7 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
             <textarea id='post-textbox' className="post-textbox" onChange={(e) => setPostInput(e.target.value)} value={postInput}></textarea>
           <div className="centered-form-elements">
             <div>
+              {/* Checkbox for whether or not this post is public. */}
               <label htmlFor='public-box'>Make this public:</label>
               <input id='public-box' type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}></input>
             </div>
@@ -161,6 +163,7 @@ export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive
             }
           </div>
         </form>
+        {/* Validation errors. */}
         {errors ? <ul>
           {errors.map(error => <li key={() => uuidv4()}>{error.msg}</li>)}
         </ul>

@@ -24,7 +24,7 @@ export const Comment = ({comment, setError, refreshComments, hasAuth}) => {
       refreshComments()
     })
     .catch(function(error) {
-      setError(error)
+      setError(error) // set error then redirect to error page.
       navigate('/error')
     });
   }

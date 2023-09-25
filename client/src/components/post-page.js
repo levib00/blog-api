@@ -28,7 +28,7 @@ export const PostPage = ({hasAuth, setError, parseDom}) => {
   useEffect(()=> {
     if(commentError) {
       setError(commentError)
-      navigate('/error')
+      navigate('/error') // redirect to error page on error.
     }
   }, [commentError, navigate])
 
