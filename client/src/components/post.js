@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Icon from '@mdi/react';
+import { mdiSquareEditOutline } from '@mdi/js';
+import { mdiTrashCanOutline } from '@mdi/js';
 
 
-export const Post = ({post, hasAuth, setError, refreshPosts}) => {
+export const Post = ({post, hasAuth, setError, refreshPosts, parseDom}) => {
   const navigate = useNavigate();
   const postDate = new Date(post.timestamp)
 
@@ -41,7 +44,13 @@ export const Post = ({post, hasAuth, setError, refreshPosts}) => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+          Authorization: (() => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+              return 'Bearer ' + localStorage.getItem('jwt')
+            }
+            return null
+          })()
         },
         'Access-Control-Allow-Origin': '*',
         mode: 'cors'
@@ -55,14 +64,16 @@ export const Post = ({post, hasAuth, setError, refreshPosts}) => {
   }
 
   return (
-    <div className="create-post">
-      <div key={post._id}>
+    <div className="post">
+      <div className="post-info">
+        <h3 className="post-title">{parseDom(post.title)}</h3>
         <div>{`${postDate.getDate()}/${postDate.getMonth()}/${postDate.getFullYear()}`}</div>
-        <div>{post.title}</div>
-        <div className="action-buttons">
-          {hasAuth && <button onClick={deletePost}>Delete</button>}
-          {hasAuth && <a href={`/${post._id}/edit`}><button>Edit</button></a>}
-          {hasAuth && (post.isPublic ? <button onClick={(e) => editPost(e)}>Make private</button> : <button onClick={(e) => editPost(e)}>Make public</button>)} 
+      </div>
+      <div className="action-buttons">
+      {hasAuth && (post.isPublic ? <button className="publish-button" onClick={(e) => editPost(e)}>Unpublish</button> : <button className="publish-button" onClick={(e) => editPost(e)}>Publish</button>)} 
+        <div className="top-post-buttons">
+          {hasAuth && <a href={`/${post._id}/edit`}><button><Icon path={mdiSquareEditOutline} size={1} /></button></a>}
+          {hasAuth && <button onClick={deletePost}><Icon path={mdiTrashCanOutline} size={1} /></button>}
         </div>
       </div>
     </div>
