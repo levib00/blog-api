@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {v4 as uuidv4} from 'uuid'
 
-export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive props from app for when validation fails
+export const SubmitPost = ({isEdit, setError, hasAuth, parseDom}) => { //receive props from app for when validation fails
   // State to hold the comment input
   const [titleInput, setTitleInput] = useState('');
   const [postInput, setPostInput] = useState('');
@@ -14,16 +14,15 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
   // State to control the display of the sign-in modal
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!hasAuth) {
       navigate('/')
     }
   })
 
   const setValues = (inputs) => {
     const {title, content, isPublic, timestamp} = inputs
-    console.log(inputs)
-    setTitleInput(title)
-    setPostInput(content)
+    setTitleInput(parseDom(title))
+    setPostInput(parseDom(content))
     setIsPublic(isPublic)
     setTimestamp(timestamp)
   }
@@ -35,7 +34,13 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+        Authorization: (() => {
+          const token = localStorage.getItem('jwt');
+          if (token) {
+            return 'Bearer ' + localStorage.getItem('jwt')
+          }
+          return null
+        })()
       },
       'Access-Control-Allow-Origin': '*',
       mode: 'cors'
@@ -67,7 +72,14 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+          Authorization: (() => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+              return 'Bearer ' + localStorage.getItem('jwt')
+              
+            }
+            return null
+          })()
         },
         'Access-Control-Allow-Origin': '*',
         mode: 'cors'
@@ -97,7 +109,13 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('jwt'),
+          Authorization: (() => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+              return 'Bearer ' + localStorage.getItem('jwt')
+            }
+            return null
+          })()
         },
         'Access-Control-Allow-Origin': '*',
         mode: 'cors'
@@ -106,7 +124,6 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
         navigate('/')
       } else {
         const jsonResponse = await response.json()
-        console.log(jsonResponse.errors)
         setErrors(jsonResponse.errors)
       }
     } catch (error) {
@@ -116,28 +133,40 @@ export const SubmitPost = ({isEdit, isAuthenticated, setError}) => { //receive p
   }
 
   return (
-    <div className="create-post">
-      <form>
-        <label htmlFor='post-title'>Title</label>
-        <div>{titleInput.length} / 48</div>
-        <input id='post-title' type='text' onChange={(e) => setTitleInput(e.target.value)} value={titleInput}></input>
-        {/* Textarea for entering the comment */}
-        <label  htmlFor='post-textbox'>Post text</label>
-        <textarea id='post-textbox' className="comment-textbox" onChange={(e) => setPostInput(e.target.value)} value={postInput}></textarea>
-        <label htmlFor='public-box'>Make this public</label>
-        <input id='public-box' type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}></input>
-        {/* Button to save the comment */}
-        { isEdit ? 
-          <button type="submit" className="submit-post-button"  onClick={(e) => editPost(e)}>update</button>
-          :
-          <button type="submit" className="submit-post-button"  onClick={(e) => submitPost(e)}>save</button>
-        }
-      </form>
-      {errors ? <ul>
-        {errors.map(error => <li key={() => uuidv4()}>{error.msg}</li>)}
-      </ul>
-      :
-      null}
+    <div className={!isEdit ? "content" : "submit-form"}>
+      <div class="submit-form">
+        <form>
+          <div className="title">
+            <div className="title-info">
+              <label htmlFor='post-title'>Title:</label>
+              <span className="char-counter">{titleInput.length} / 48</span>
+            </div>
+            <div><input id='post-title' type='text' className='title-input' onChange={(e) => setTitleInput(e.target.value)} value={titleInput}></input></div>
+          </div>
+          {/* Textarea for entering the comment */}
+          <div className="post-content">
+            <label  htmlFor='post-textbox'>Post text:</label>
+          </div>
+            <textarea id='post-textbox' className="post-textbox" onChange={(e) => setPostInput(e.target.value)} value={postInput}></textarea>
+          <div className="centered-form-elements">
+            <div>
+              <label htmlFor='public-box'>Make this public:</label>
+              <input id='public-box' type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}></input>
+            </div>
+            {/* Button to save the comment */}
+            { isEdit ?
+              <button type="submit" className="submit-post-button"  onClick={(e) => editPost(e)}>Update</button>
+              :
+              <button type="submit" className="submit-post-button"  onClick={(e) => submitPost(e)}>Save</button>
+            }
+          </div>
+        </form>
+        {errors ? <ul>
+          {errors.map(error => <li key={() => uuidv4()}>{error.msg}</li>)}
+        </ul>
+        :
+        null}
+      </div>
     </div>
   )
 }
