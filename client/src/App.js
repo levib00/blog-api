@@ -6,26 +6,48 @@ import { LogIn } from './components/log-in';
 import { Error } from './components/error'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PostPage } from "./components/post-page";
+import { Footer } from "./components/footer"
+import './styles/styles.css'
 
 function App() {
   const [error, setError] = useState()
+  const [hasAuth, setHasAuth] = useState(localStorage.getItem('jwt'))
+/*
+  const fetcher = (url) => fetch(url, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: (() => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+          return 'Bearer ' + localStorage.getItem('jwt')
+        }
+        return null
+      })()
+    },
+    'Access-Control-Allow-Origin': '*',
+    mode: 'cors'
+  })
+  .then(res => res.json());*/ // TODO: would this work???
 
-  const isAuthenticated = () => {
-    const cookie = document.cookie
-    return !!cookie
+  const parseDom = (str) => {
+    const doc = new DOMParser().parseFromString(str, "text/html");
+    return doc.documentElement.textContent;
   }
 
   return (
     <div className="App">
       <BrowserRouter>
-        <Nav setError={setError} isAuthenticated={isAuthenticated} />
+        <Nav setError={setError} hasAuth={hasAuth} setHasAuth={setHasAuth} />
         <Routes>
-          <Route path='/' element={<Home setError={setError} isAuthenticated={isAuthenticated} />} />
-          <Route path="/post/new"  element={<SubmitPost isAuthenticated={isAuthenticated} setError={setError} /> } />
-          <Route path="/:postId/edit"  element={<PostPage isAuthenticated={isAuthenticated} setError={setError} /> } />
-          <Route path="/log-in"  element={<LogIn isAuthenticated={isAuthenticated} setError={setError} /> } />
+          <Route path='/' element={<Home setError={setError} parseDom={parseDom} hasAuth={hasAuth} setHasAuth={setHasAuth} />} />
+          <Route path="/post/new"  element={<SubmitPost hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} /> } />
+          <Route path="/:postId/edit"  element={<PostPage parseDom={parseDom} hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} /> } />
+          <Route path="/log-in"  element={<LogIn hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth}/> } />
           <Route path='/error' element={<Error error={error}/>} />
         </Routes>
+        <Footer/>
       </BrowserRouter>
     </div>
   );
