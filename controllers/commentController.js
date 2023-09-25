@@ -20,11 +20,15 @@ exports.CommentPost = [
   // Validate and sanitize fields.
   body('content', 'Comment must not be empty.')
     .trim()
+    .isLength({ min: 3 })
+    .withMessage('Comment must be at least 3 characters long.')
     .isLength({ max: 300 })
     .withMessage('Comment must be less than 300 characters long.')
     .escape(),
   body('displayName', 'Display name must not be empty.')
     .trim()
+    .isLength({ min: 3 })
+    .withMessage('Display name must be at least 3 characters long.')
     .isLength({ max: 16 })
     .withMessage('Display name must be less than 16 characters long.')
     .escape(),
@@ -54,7 +58,7 @@ exports.CommentPost = [
         await comment.save();
         res.send('comment has been saved');
       } catch (error) {
-        res.status(500).send('something went wrong');
+        res.status(500).send({ msg: 'something went wrong' });
       }
     }
   }),
