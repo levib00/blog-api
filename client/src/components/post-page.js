@@ -5,7 +5,7 @@ import { SubmitPost } from './submit-form';
 
 import useSWR from 'swr';
 
-export const PostPage = ({isAuthenticated, setError}) => {
+export const PostPage = ({hasAuth, setError, parseDom}) => {
   const navigate = useNavigate()
   const { postId }  = useParams()
 
@@ -33,12 +33,12 @@ export const PostPage = ({isAuthenticated, setError}) => {
   }, [commentError, navigate])
 
   return (
-    <div className="post-page">
-      <div className="post">
-        {<SubmitPost isEdit={true} isAuthenticated={isAuthenticated} setError={setError} />}
+    <div className="content">
+      <div className="post-form">
+        {<SubmitPost isEdit={true} hasAuth={hasAuth} setError={setError} parseDom={parseDom} />}
       </div>
       <div className="comment-section">
-        {comments && comments.map(comment => <Comment key={comment._id} refreshComments={mutate} comment={comment} />)}
+        {comments && comments.map(comment => <Comment key={comment._id} refreshComments={mutate} hasAuth={hasAuth} comment={comment} parseDom={parseDom} />)}
       </div>
     </div>
   )
