@@ -7,10 +7,10 @@ const CommentSchema = new Schema({
     type: Schema.ObjectId, ref: 'post', required: true,
   },
   content: {
-    type: String, required: true, minLength: 3, maxLength: 300,
+    type: String, required: true, minLength: 3, maxLength: 1800,
   },
   displayName: {
-    type: String, required: true, minLength: 3, maxLength: 16,
+    type: String, required: true, minLength: 3, maxLength: 96,
   },
   timestamp: {
     type: Number, required: true,
