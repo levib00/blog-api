@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
-export const Post = ({post, postId}) => {
+export const Post = ({post, postId, parseDom}) => {
   const postDate = new Date(post.timestamp)
 
   return (
-    <div className="create-post">
-      <div key={post._id}>
-        {postId === post._id ?
-          <h2>{post.title}</h2>
-          :
-          <a href={`/${post._id}`}><button className="search-button"><h2>{post.title}</h2></button></a> 
-        }
-        <div>{`${postDate.getDate()}/${postDate.getMonth()}/${postDate.getFullYear()}`}</div>
-        <div>{post.content}</div>
-      </div>
+    <div className="post">
+        <div key={post._id}>
+          {postId === post._id ?
+            <h3 className="post-title">{parseDom(post.title)}</h3>
+            :
+            <a href={`/${post._id}`}><button className="title-button"><h3 className="post-title">{parseDom(post.title)}</h3></button></a>
+          }
+          <div>{`${postDate.getDate()}/${postDate.getMonth()}/${postDate.getFullYear()}`}</div>
+          {postId === post._id ?
+            null
+            :
+            <a href={`/${post._id}`}><button className="title-button see-comments">See comments</button></a>
+          }
+        </div>
+        <p className="post-content">{parseDom(post.content)}</p>
     </div>
   )
 }
