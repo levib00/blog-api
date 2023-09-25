@@ -40,19 +40,29 @@ export const SubmitComment = ({ postId, refreshComments, setError }) => {
       navigate('/error')
     }
   }
-
+  
   return (
-    <div className="create-comment">
-      <form onSubmit={(e) => postComment(e, {content: comment, displayName: displayName, parentPost: postId})}>
-        <label>Display name:</label>
-        <div>{displayName.length} / 16</div>
-        <input type="text" onChange={(e) => setDisplayName(e.target.value)} value={displayName}/>
-        <label>comment:</label>
-        <div>{comment.length} / 300</div>
-        <textarea onChange={(e) => setComment(e.target.value)} value={comment}/>
-        <input type='submit' value='Submit'/>
+    <div className="submit-comment">
+      <form className="comment-form" onSubmit={(e) => postComment(e, {content: comment, displayName: displayName, parentPost: postId})}>
+        <div>
+          <div className="form-display-name-info">
+            <label>Display name:</label>
+            <span>{displayName.length} / 16</span>
+          </div>
+          <input className="display-name-input" type="text" onChange={(e) => setDisplayName(e.target.value)} value={displayName} required/>
+        </div>
+        <div>
+          <div className="form-comment-info">
+            <label>comment:</label>
+            <span>{comment.length} / 300</span>
+          </div>
+          <textarea className="comment-input" onChange={(e) => setComment(e.target.value) } value={comment} required/>
+        </div>
+        <div className="space-button">
+          <input className="submit-comment-button" type='submit' value='Submit'/>
+        </div>
       </form>
-      <ul>
+      <ul className="error-list">
         {errors && errors.map(error => <li key={() => uuidv4()}>{error.msg}</li>)}
       </ul>
     </div>
