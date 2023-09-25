@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export const Nav = ({setError, isAuthenticated}) => {
+export const Nav = ({setError, hasAuth, setHasAuth}) => {
   const navigate = useNavigate();
-
-  const hasAuth = isAuthenticated()
 
   const deleteJWT = () => {
     localStorage.removeItem('jwt');
@@ -24,6 +22,7 @@ export const Nav = ({setError, isAuthenticated}) => {
       })
       if (response.status === 200) {
         deleteJWT()
+        setHasAuth(false)
         navigate('/')
       } else {
         setError(response)
@@ -36,10 +35,12 @@ export const Nav = ({setError, isAuthenticated}) => {
   }
 
   return (
-    <div className="comment">
+    <nav className="nav">
       <h1><a href="/">Home</a></h1>
-      {hasAuth && <a href="/post/new"><button>Create a new post</button></a>}
-      { hasAuth ? <button onClick={logout}>Log out</button>: <a href="/log-in"><button>Log in</button></a>}
-    </div>
+      <div className="nav-buttons">
+        { hasAuth && <a href="/post/new"><button>New post</button></a> }
+        { hasAuth ? <div className="log-out"><button className="log-out" onClick={logout}>Log out</button></div> : <a href="/log-in"><button>Log in</button></a> }
+      </div>
+    </nav>
   )
 }
