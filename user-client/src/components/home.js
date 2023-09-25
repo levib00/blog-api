@@ -18,11 +18,13 @@ export const Home = ({setError, parseDom}) => {
   })
   .then(res => res.json());
 
+  // SWR is used to fetch on page load without useEffect.
   const {data: posts, error} = useSWR(`http://localhost:8000/posts`, fetcher)
 
   useEffect(()=> {
     if(error) {
-      setError(error)
+      setError(error) // set Error for error page.
+      navigate('/error')
     }
   }, [error, navigate])
 

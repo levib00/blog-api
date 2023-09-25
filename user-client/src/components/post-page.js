@@ -19,28 +19,25 @@ export const PostPage = ({setError, parseDom}) => {
       'Access-Control-Allow-Origin': '*',
       mode: 'cors'
     })
-    console.log(res)
 
     if (!res.ok) {
       const error = new Error('An error occurred while fetching the data.')
       error.info = await res.text()
       error.status = res.status
-      console.log({error})
       throw error
     }
 
     return res.json()
   }
 
+  //SWR is used to fetch on page load without useEffect.
   const {data: post, error: postError} = useSWR(`http://localhost:8000/posts/${postId}`, fetcher)
   const {data: comments, mutate, error: commentError} = useSWR(`http://localhost:8000/comments/${postId}`, fetcher)
-
-  console.log({post, comments, postError, commentError})
 
   useEffect(()=> {
     if(postError) {
       setError(postError)
-      navigate('/error')
+      navigate('/error') // redirect to error page.
     }
   }, [commentError, postError, navigate])
 

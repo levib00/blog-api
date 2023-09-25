@@ -13,7 +13,7 @@ function App() {
   const [error, setError] = useState()
   const [hasAuth, setHasAuth] = useState(localStorage.getItem('jwt'))
 
-  const parseDom = (str) => {
+  const parseDom = (str) => {  // Parses special characters from html code to unicode characters.
     const doc = new DOMParser().parseFromString(str, "text/html");
     return doc.documentElement.textContent;
   }

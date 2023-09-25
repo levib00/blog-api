@@ -11,7 +11,7 @@ import './styles/styles.css'
 function App() {
   const [error, setError] = useState(null)
 
-  const parseDom = (str) => {
+  const parseDom = (str) => { // Parses special characters from html code to unicode characters.
     const doc = new DOMParser().parseFromString(str, "text/html");
     return doc.documentElement.textContent;
   }

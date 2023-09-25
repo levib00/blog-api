@@ -28,25 +28,26 @@ export const SubmitComment = ({ postId, refreshComments, setError }) => {
         body: JSON.stringify(data),
       })
       data.timestamp = 'now'
-      if (response.status === 200) {
+      if (response.status === 200) { // refresh comments on successful post.
         refreshComments()
         clearForm()
       } else {
         const jsonResponse = await response.json()
-        setErrors(jsonResponse.errors)
+        setErrors(jsonResponse.errors) // set validation error.
       }
     } catch (error) {
-      setErrors(error)
-      navigate('/error')
+      setError(error)
+      navigate('/error') // redirect to error page.
     }
   }
-  
+
   return (
     <div className="submit-comment">
       <form className="comment-form" onSubmit={(e) => postComment(e, {content: comment, displayName: displayName, parentPost: postId})}>
         <div>
           <div className="form-display-name-info">
             <label>Display name:</label>
+            {/* counts length of input so user knows character count */}
             <span>{displayName.length} / 16</span>
           </div>
           <input className="display-name-input" type="text" onChange={(e) => setDisplayName(e.target.value)} value={displayName} required/>
@@ -54,6 +55,7 @@ export const SubmitComment = ({ postId, refreshComments, setError }) => {
         <div>
           <div className="form-comment-info">
             <label>comment:</label>
+            {/* counts length of input so user knows character count */}
             <span>{comment.length} / 300</span>
           </div>
           <textarea className="comment-input" onChange={(e) => setComment(e.target.value) } value={comment} required/>
@@ -63,6 +65,7 @@ export const SubmitComment = ({ postId, refreshComments, setError }) => {
         </div>
       </form>
       <ul className="error-list">
+        {/* Validation errors. */}
         {errors && errors.map(error => <li key={() => uuidv4()}>{error.msg}</li>)}
       </ul>
     </div>
