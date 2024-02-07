@@ -1,6 +1,6 @@
 const express = require('express');
 const commentController = require('../controllers/commentController');
-const verifyToken = require('../middleware/verifyToken')
+const verifyToken = require('../middleware/verifyToken');
 
 const router = express.Router();
 
