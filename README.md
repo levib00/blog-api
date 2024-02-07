@@ -41,6 +41,7 @@ Delete a Comment
     Controller: commentController.CommentDelete
 
 Post Routes
+
 Get All Posts
 
     URL: https://levib00-blog-api.adaptable.app/posts/
@@ -82,6 +83,7 @@ Delete a Post
     Controller: postController.PostDelete
 
 Authentication Routes
+
 Log In
 
     URL: https://levib00-blog-api.adaptable.app/users/log-in
