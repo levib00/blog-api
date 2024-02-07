@@ -1,4 +1,5 @@
 Comment Routes
+
 Get All Comments
 
     URL: https://levib00-blog-api.adaptable.app/comments/
