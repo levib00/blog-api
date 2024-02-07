@@ -1,11 +1,26 @@
-module.exports = function (req, res, next) {
+const jwt = require('jsonwebtoken');
+
+module.exports = (req, res, next) => {
+  // set req.token to jwt if jwt is in headers. else set req.token to null.
   const bearerHeader = req.headers.authorization;
   if (typeof bearerHeader !== 'undefined') {
     const bearer = bearerHeader.split(' ');
     const bearerToken = bearer[1];
-    req.token = bearerToken;
-  } else {
-    req.token = null;
+    if (!bearerToken) {
+      req.user = null;
+      return next();
+    }
+    // eslint-disable-next-line consistent-return
+    return jwt.verify(bearerToken, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        req.user = null;
+        return next();
+      }
+      req.user = user;
+      return next();
+      // Continue to the next middleware or route handler
+    });
   }
-  next();
+  req.user = null;
+  return next();
 };
